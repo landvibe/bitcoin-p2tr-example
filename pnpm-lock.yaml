@@ -8,9 +8,6 @@ dependencies:
   '@types/node':
     specifier: ^20.11.19
     version: 20.11.19
-  bip174:
-    specifier: ^2.1.1
-    version: 2.1.1
   bitcoinjs-lib:
     specifier: ^6.1.5
     version: 6.1.5
