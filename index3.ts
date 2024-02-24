@@ -29,7 +29,7 @@ const scriptTree: Taptree = [
   },
 ];
 
-const scriptRedeem = {
+const redeem = {
   output: scriptBuffer2,
   redeemVersion: LEAF_VERSION_TAPSCRIPT,
 };
@@ -37,17 +37,14 @@ const p2tr = payments.p2tr({
   internalPubkey: toXOnly(keypair.publicKey),
   scriptTree,
   network,
-  redeem: scriptRedeem,
+  redeem,
 });
 
 if (!p2tr.witness || !p2tr.output) {
   throw new Error("witness and output is required");
 }
-const tapLeafScript = {
-  leafVersion: scriptRedeem.redeemVersion,
-  script: scriptRedeem.output,
-  controlBlock: p2tr.witness[p2tr.witness.length - 1],
-};
+const controlBlock = p2tr.witness[p2tr.witness.length - 1];
+const scriptPubkey = p2tr.output;
 
 const psbt = new Psbt({ network });
 const txid = "64d8a2ab7ca706ac759736829956195c44c69e73581cf827190ad86f6d9812a1";
@@ -57,8 +54,7 @@ const fee = 1000;
 psbt.addInput({
   hash: txid,
   index: vout,
-  witnessUtxo: { value: utxoValue, script: p2tr.output },
-  tapLeafScript: [tapLeafScript],
+  witnessUtxo: { value: utxoValue, script: scriptPubkey },
 });
 
 psbt.addOutput({
@@ -75,8 +71,8 @@ const customFinalizer = () => {
     const witness = [
       Buffer.from([2]),
       Buffer.from([3]),
-      tapLeafScript.script,
-      tapLeafScript.controlBlock,
+      redeem.output,
+      controlBlock,
     ];
     return { finalScriptWitness: witnessStackToScriptWitness(witness) };
   } catch (err) {
